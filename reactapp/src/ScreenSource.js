@@ -1,31 +1,60 @@
-import React,{useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
+import {gsap} from "gsap";
 import {Link} from 'react-router-dom'
 import './App.css';
 import { List, Avatar} from 'antd';
 import Nav from './Nav'
 
 function ScreenSource() {
-
+  const[toggle, setToggle] = useState(false)
   const [sourceList, setSourceList] = useState([])
-
+  const [langue, setLangue] = useState("fr");
+  const [pays, setPays] = useState("fr");
+  const changeState = () => {
+    setToggle(!toggle)
+  };
+  const avatRef = useRef(null)
   useEffect(() => {
-    const APIResultsLoading = async() => {
-      const data = await fetch('https://newsapi.org/v2/sources?language=fr&country=fr&apiKey=b32c8b844d1243b1a7998d8228910f50')
-      const body = await data.json()
-      setSourceList(body.sources)
+    gsap.to(avatRef.current, {
+      scale: 1.1,
+      rotateX: 360,
+      duration: 1.2
+    })
+
+    const apiques= async() => {
+      const apireq = await fetch(`https://newsapi.org/v2/sources?language=${langue}&country=${pays}&apiKey=9a4637363ab14af2b5e9bd6bd48b4bab`)
+      const apires = await apireq.json()
+      setSourceList(apires.sources)
+      console.log(langue, pays)
     }
-
-    APIResultsLoading()
-  }, [])
-
+    apiques()
+  }, [langue, pays])
   return (
     <div>
-        <Nav/>
-       
-       <div className="Banner"/>
-
-       <div className="HomeThemes">
-          
+      <Nav/>
+        <div className="Banner">
+        <div className="flag" onClick={changeState} ref={avatRef}>
+          <Avatar
+            style={{ cursor: "pointer" }}
+            size={65}
+            src="./images/fr.png"
+            onClick={() => {
+              setLangue("fr");
+              setPays("fr");
+            }}
+          />
+          <Avatar
+            style={{ cursor: "pointer" }}
+            size={65}
+            src="./images/ang.png"
+            onClick={() => {
+              setLangue("en");
+              setPays("gb");
+            }}
+          />
+        </div>
+      </div>
+       <div className="HomeThemes"> 
               <List
                   itemLayout="horizontal"
                   dataSource={sourceList}
@@ -39,10 +68,7 @@ function ScreenSource() {
                     </List.Item>
                   )}
                 />
-
-
-          </div>
-                 
+          </div>    
       </div>
   );
 }

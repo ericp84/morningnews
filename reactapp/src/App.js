@@ -1,15 +1,21 @@
 import React from 'react';
 import {BrowserRouter as Router, Switch, Route} from 'react-router-dom'
 import './App.css';
+////////import redux
+import wishList from "./reducers/article";
+import { Provider } from "react-redux";
+import { createStore, combineReducers } from "redux";
 
 import ScreenHome from './ScreenHome';
 import ScreenArticlesBySource from './ScreenArticlesBySource'
 import ScreenMyArticles from './ScreenMyArticles'
 import ScreenSource from './ScreenSource'
 
+const store = createStore(combineReducers({wishList}));
+
 function App() {
   return (
-
+<Provider store={store}>
     <Router>
       <Switch>
         <Route component={ScreenHome} path="/" exact />
@@ -18,7 +24,7 @@ function App() {
         <Route component={ScreenMyArticles} path="/screenmyarticles" exact />
       </Switch>
     </Router>
-
+</Provider>
   );
 }
 

@@ -1,50 +1,68 @@
-import React, {useState} from 'react';
+
+import React, {useState, useEffect, useRef} from 'react';
+import {gsap} from "gsap";
 import './App.css';
 import {Input,Button} from 'antd';
-import {Link, Redirect} from 'react-router-dom'
+import {Redirect} from 'react-router-dom'
+import {connect} from 'react-redux';
 
-function ScreenHome() {
-
+function ScreenHome(props) {
+  const [toggle, setToggle] = useState(false)////animation gsap
   const [signUpUsername, setSignUpUsername] = useState('')
   const [signUpEmail, setSignUpEmail] = useState('')
   const [signUpPassword, setSignUpPassword] = useState('')
-
   const [signInEmail, setSignInEmail] = useState('')
   const [signInPassword, setSignInPassword] = useState('')
-
   const [userExists, setUserExists] = useState(false)
-
   const [listErrorsSignin, setErrorsSignin] = useState([])
   const [listErrorsSignup, setErrorsSignup] = useState([])
 
+  /////////animation gsap
+  const changeState = () => {
+    setToggle(!toggle)
+  };
+
+  const cardRef = useRef(null);
+  const cardRefb = useRef(null)
+  useEffect(() => {
+    gsap.to(cardRef.current, {
+      scale: 1.2,
+      rotateX: 360,
+      duration: 1.2
+    }) 
+    gsap.to(cardRefb.current, {
+      scale: 1.2,
+      rotateX: 360,
+      duration: 1.2
+    })
+    console.log(cardRef)
+  })
+//////////////////////////////////////////////////////sign-up
   var handleSubmitSignup = async () => {
-    
-    const data = await fetch('/sign-up', {
+    const signup = await fetch('/sign-up', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: `usernameFromFront=${signUpUsername}&emailFromFront=${signUpEmail}&passwordFromFront=${signUpPassword}`
+      body: `username=${signUpUsername}&email=${signUpEmail}&password=${signUpPassword}`
     })
-
-    const body = await data.json()
-
-    if(body.result == true){
+    const signupj = await signup.json()
+    if(signupj.result === true){
+      props.rectok(signupj.token);
       setUserExists(true)
     } else {
-      setErrorsSignup(body.error)
+      setErrorsSignup(signupj.error);
     }
   }
-
+///////////////////////////////////////////////////////////sign-in
   var handleSubmitSignin = async () => {
- 
     const data = await fetch('/sign-in', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: `emailFromFront=${signInEmail}&passwordFromFront=${signInPassword}`
+      body: `email=${signInEmail}&password=${signInPassword}`
     })
-
     const body = await data.json()
-
-    if(body.result == true){
+    if(body.result === true){
+      props.rectok(body.token)
+      console.log("RECTOK",body.token)
       setUserExists(true)
     }  else {
       setErrorsSignin(body.error)
@@ -54,11 +72,9 @@ function ScreenHome() {
   if(userExists){
     return <Redirect to='/screensource' />
   }
-
   var tabErrorsSignin = listErrorsSignin.map((error,i) => {
     return(<p>{error}</p>)
   })
-
   var tabErrorsSignup = listErrorsSignup.map((error,i) => {
     return(<p>{error}</p>)
   })
@@ -70,7 +86,8 @@ function ScreenHome() {
 
           {/* SIGN-IN */}
 
-          <div className="Sign">
+          <div className="Sign" onClick={changeState}
+            ref={cardRef}>
                   
             <Input onChange={(e) => setSignInEmail(e.target.value)} className="Login-input" placeholder="email" />
 
@@ -83,8 +100,8 @@ function ScreenHome() {
           </div>
 
           {/* SIGN-UP */}
-
-          <div className="Sign">
+          <div className="Sign" onClick={changeState}
+            ref={cardRefb}>
                   
             <Input onChange={(e) => setSignUpUsername(e.target.value)} className="Login-input" placeholder="username" />
 
@@ -102,4 +119,12 @@ function ScreenHome() {
   );
 }
 
-export default ScreenHome;
+function mapDispatchToProps(dispatch) {
+  return {
+    rectok: function (token) {
+      dispatch({ type: "tokenok", token: token });
+      console.log("TOKEN/////",token);
+    },
+  };
+}
+export default connect(null, mapDispatchToProps)(ScreenHome);
